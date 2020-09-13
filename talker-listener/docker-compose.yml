@@ -1,0 +1,36 @@
+version: "3"
+
+services:
+  rosmaster:
+    image: ros:kinetic-ros-core
+    container_name: rosmaster
+    hostname: rosmaster
+    ports:
+      - "11311:11311"
+    command: roscore
+
+  talker:
+    depends_on:
+      - "rosmaster"
+    image: prince/ros-talker-listener
+    container_name: talker
+    hostname: talker
+    environment:
+      - "ROS_HOSTNAME=talker"
+      - "ROS_MASTER_URI=http://rosmaster:11311"
+    command: rosrun mypkg task0_pub.py
+    volumes:
+      - ./log/talker:/root/.ros/log
+
+  listener:
+    depends_on:
+      - "rosmaster"
+    image: prince/ros-talker-listener
+    container_name: listener
+    hostname: listener
+    environment:
+      - "ROS_HOSTNAME=listener"
+      - "ROS_MASTER_URI=http://rosmaster:11311"
+    command: rosrun mypkg task0_sub.py
+    volumes:
+      - ./log/listener:/root/.ros/log
