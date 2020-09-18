@@ -1,0 +1,79 @@
+version: "3"
+
+services:
+  rosmaster:
+    image: ros:kinetic-ros-core
+    container_name: rosmaster
+    hostname: rosmaster
+    ports:
+      - "11311:11311"
+    # environment: 
+    #   - "ROS_IP=156.0.0.3"
+    # networks:
+    #   rrbot_net:
+    #     ipv4_address: "156.0.0.3"
+    command: roscore
+
+  rrbot-gazebo:
+    depends_on:
+      - "rosmaster"
+    image: prince/ros-kinetic-desktop
+    container_name: rrbot-gazebo
+    hostname: rrbot-gazebo
+    ports: 
+      - "6080:80"
+    environment:
+      - "ROS_HOSTNAME=rrbot-gazebo"
+      # - "ROS_IP=156.0.0.4"
+      - "ROS_MASTER_URI=http://rosmaster:11311"
+    volumes: 
+      - ./logs/rrbot-gazebo:/root/.ros/log
+    # networks:
+    #   rrbot_net:
+    #     ipv4_address: "156.0.0.4"
+
+  rrbot-control:
+    depends_on:
+      - "rosmaster"
+      - "rrbot-gazebo"
+    image: prince/ros-kinetic-desktop-no-vnc
+    container_name: rrbot-control
+    hostname: rrbot-control
+    tty: true
+    #ports:
+     # - "6081:80"
+    environment:
+      - "ROS_HOSTNAME=rrbot-control"
+    #  - "ROS_IP=156.0.0.5"
+      - "ROS_MASTER_URI=http://rosmaster:11311"
+    #volumes: 
+      #- ./logs/rrbot-control:/root/.ros/log
+    # networks:
+    #   rrbot_net:
+    #     ipv4_address: 156.0.0.5
+    command: "roslaunch rrbot_control rrbot_control.launch"
+
+  rrbot-talker:
+    depends_on:
+      - "rosmaster"
+      - "rrbot-gazebo"
+      - "rrbot-control"
+    image: prince/ros-rrbot-control:latest
+    container_name: rrbot-talker
+    hostname: rrbot-talker
+    environment:
+      - "ROS_HOSTNAME=rrbot-talker"
+    #  - "ROS_IP=156.0.0.6"
+      - "ROS_MASTER_URI=http://rosmaster:11311"
+    command: rosrun mypkg task0_rrbot_pub.py
+    # networks:
+    #   rrbot_net:
+    #     ipv4_address: "156.0.0.6"
+
+# networks:
+#   rrbot_net:
+#     driver: bridge
+#     ipam:
+#       config:
+#         - subnet: 156.0.0.0/8
+#           gateway: "156.0.0.1"

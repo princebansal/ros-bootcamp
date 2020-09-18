@@ -7,6 +7,9 @@
 2) Run container
 
     `docker run -it --rm <repo>/<image>:<tag>`
+3) Attach to docker container bash
+
+    `docker exec -it <container-id> /bin/bash`
 3) Run with env variable
 
     `docker run -it --rm -e <VARIABLE_NAME>=<VARIABLE_VALUE> <repo>/<image>:<tag>`

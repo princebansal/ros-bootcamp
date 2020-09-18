@@ -1,4 +1,4 @@
-ARG FROM_IMAGE=osrf/ros:kinetic-desktop-full
+ARG FROM_IMAGE=ros:kinetic-ros-core
 #ARG FROM_IMAGE=osrf/ros:kinetic-desktop-full
 ARG OVERLAY_WS=/opt/ros/overlay_ws
 
@@ -16,7 +16,7 @@ repositories: \n\
     version: kinetic-devel \n\
 " > ../overlay.repos
 RUN ln -snf /bin/bash /bin/sh 
-RUN apt-get update && apt-get -y install python3-vcstool 
+RUN apt-get update && apt-get -y install python3-vcstool && apt-get -y install git
 #RUN /bin/bash -c "source ~/.bashrc"
 RUN vcs import ./ < ../overlay.repos
 RUN find . -path '*dummy_robot' -type d | \ 
@@ -37,8 +37,7 @@ ARG OVERLAY_WS
 WORKDIR $OVERLAY_WS
 COPY --from=cacher /tmp/$OVERLAY_WS/src ./src
 RUN . /opt/ros/$ROS_DISTRO/setup.sh && \
-    apt-get update && apt-get install -y ros-kinetic-ros-control ros-kinetic-joint-state-controller ros-kinetic-effort-controllers ros-kinetic-position-controllers ros-kinetic-velocity-controllers ros-kinetic-ros-controllers ros-kinetic-gazebo-ros ros-kinetic-gazebo-ros-control && \
-    rosdep update && rosdep install -y \
+    apt-get update && rosdep init && rosdep update && rosdep install -y \
       --from-paths \
         src/ros-simulation/gazebo_ros_demos \
       --ignore-src \
@@ -51,14 +50,18 @@ RUN . /opt/ros/$ROS_DISTRO/setup.sh && \
     catkin_make 
 #	-DCATKIN_WHITELIST_PACKAGES="rrbot_description"
 
-RUN sudo apt-get -y update && sudo apt-get -y upgrade
-
 # source entrypoint setup
 RUN ls $OVERLAY_WS/
 ENV OVERLAY_WS $OVERLAY_WS
-RUN sed --in-place --expression \
-      '$isource "$OVERLAY_WS/devel/setup.bash"' \
-      /ros_entrypoint.sh
+#RUN sed --in-place --expression \
+#      '$isource "$OVERLAY_WS/devel/setup.bash"' \
+#      /ros_entrypoint.sh
+
+RUN sudo apt-get -y update && sudo apt-get -y upgrade
+
+RUN echo "source $OVERLAY_WS/devel/setup.bash" >> /entrypoint.sh
+RUN touch /root/bashrc && echo "source $OVERLAY_WS/devel/setup.bash" >> /root/.bashrc
+RUN touch ~/.bashrc && echo "source $OVERLAY_WS/devel/setup.bash" >> ~/.bashrc
 
 ENV BASH_ENV "$OVERLAY_WS/devel/setup.bash"
 
