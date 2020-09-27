@@ -41,6 +41,10 @@
 
     `docker inspect -f '{{index .Options "com.docker.network.bridge.enable_icc"}}' <network-name>`
 
+13) Stop all running containers
+
+    `docker stop $(docker ps -aq)`
+
 ## docker-compose
 1) Start the services
 

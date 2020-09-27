@@ -1,7 +1,7 @@
 ## Run the service using rosmaster
 Run the following command to up the services
 
-`docker compose up -d`
+`docker-compose up -d`
 
 Check the listener logs using 
 

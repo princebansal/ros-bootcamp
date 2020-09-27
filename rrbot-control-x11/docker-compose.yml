@@ -12,16 +12,20 @@ services:
   rrbot-gazebo:
     depends_on:
       - "rosmaster"
-    image: prince/ros-kinetic-desktop
+    image: prince/ros-kinetic-desktop-no-vnc:latest
     container_name: rrbot-gazebo
     hostname: rrbot-gazebo
-    ports: 
-      - "6080:80"
+    tty: true
+    devices: 
+      - /dev/dri:/dev/dri
     environment:
+      - "DISPLAY=192.168.1.12:0"
       - "ROS_HOSTNAME=rrbot-gazebo"
       - "ROS_MASTER_URI=http://rosmaster:11311"
+      - "QT_X11_NO_MITSHM=1"
     volumes: 
       - ./logs/rrbot-gazebo:/root/.ros/log
+      - /tmp/.X11-unix:/tmp/.X11-unix
     
   rrbot-control:
     depends_on:

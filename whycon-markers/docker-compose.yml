@@ -1,0 +1,24 @@
+version: "3"
+
+services:
+  rosmaster:
+    image: ros:kinetic-ros-core
+    container_name: rosmaster
+    hostname: rosmaster
+    ports:
+      - "11311:11311"
+    command: roscore
+
+  whycon-gazebo:
+    depends_on:
+      - "rosmaster"
+    image: prince/ros-kinetic-whycon:latest
+    container_name: whycon-gazebo
+    hostname: whycon-gazebo
+    ports: 
+      - "6080:80"
+    environment:
+      - "ROS_HOSTNAME=whycon-gazebo"
+      - "ROS_MASTER_URI=http://rosmaster:11311"
+    volumes: 
+      - ./logs/whycon-gazebo:/root/.ros/log
